@@ -1,0 +1,4 @@
+/home/emma/clion-2017.3.1/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/emma/Desktop/CSS_430/Program1
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/emma/Desktop/CSS_430/Program1/cmake-build-debug
