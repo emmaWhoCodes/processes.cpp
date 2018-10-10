@@ -11,18 +11,18 @@ using namespace std;
 int main(int argc, char * argv[]) {
     pid_t pid; //process id
 
-    int filedescriptor1[2]; // 2 file descriptors created
-    int filedescriptor2[2]; // since the command has 2 pipes
+    int pipe1[2]; // 2 file descriptors created
+    int pipe2[2]; // since the command has 2 pipes
     int read = 0; // reading data from a pipe index
     int write = 1; //writing data to a pipe index
 
 
-    if (pipe(filedescriptor1) < 0) { //Pipe fail
+    if (pipe(pipe1) < 0) { //Pipe fail
         perror("pipe error");
         return EXIT_FAILURE;
     }
 
-    if (pipe(filedescriptor2) < 0) { //Pipe fail
+    if (pipe(pipe2) < 0) { //Pipe fail
         perror("pipe error");
         return EXIT_FAILURE;
     }
@@ -46,42 +46,42 @@ int main(int argc, char * argv[]) {
 
             } else if (pid == 0) { //great grand child
 
-                close(filedescriptor2[write]); //does not touch 2nd pipe
-                close(filedescriptor2[read]); //does not touch 2nd pipe
-                close(filedescriptor1[read]); //does not read anything.
+                close(pipe2[write]); //does not touch 2nd pipe
+                close(pipe2[read]); //does not touch 2nd pipe
+                close(pipe1[read]); //does not read anything.
 
-                dup2(filedescriptor1[write], write);
+                dup2(pipe1[write], write);
                 execlp("ps", "ps", "-A", NULL);
 
             } else { //grandchild else
 
 
-                close(filedescriptor1[write]); //does not write to grandchild. -> reads from granchild
-                close(filedescriptor2[read]); //writes to 2nd pipe, so does not read
+                close(pipe1[write]); //does not write to grandchild. -> reads from granchild
+                close(pipe2[read]); //writes to 2nd pipe, so does not read
 
 
-                dup2(filedescriptor1[read],read); //standard input is now piped
-                dup2(filedescriptor2[write], write);
+                dup2(pipe1[read],read); //standard input is now piped
+                dup2(pipe2[write], write);
                 execlp("grep", "grep", argv[1], NULL); //change
 
             }
 
         } else { //child else
 
-            close(filedescriptor2[write]); //does not write to pipe
-            close(filedescriptor1[read]);  //does not directly touch 1st pipe
-            close(filedescriptor1[write]); //does not directly touch 1st pipe
+            close(pipe2[write]); //does not write to pipe
+            close(pipe1[read]);  //does not directly touch 1st pipe
+            close(pipe1[write]); //does not directly touch 1st pipe
 
-            dup2(filedescriptor2[read], read);
+            dup2(pipe2[read], read);
             execlp("wc", "wc", "-l", NULL);
 
         }
     } else { //parent else
 
-        close(filedescriptor1[read]);
-        close(filedescriptor1[write]);
-        close(filedescriptor2[read]);
-        close(filedescriptor2[write]);
+        close(pipe1[read]);
+        close(pipe1[write]);
+        close(pipe2[read]);
+        close(pipe2[write]);
 
         wait(NULL);
 
